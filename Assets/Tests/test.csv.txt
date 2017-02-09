@@ -1,0 +1,9 @@
+id,name,age,descript,enum
+System.Int32,System.String,System.Int32,System.String,CSV.Parser+CollectionType
+1,"Joy",20,"a, 
+boy",Data
+2,"Jack",22,"a sb",Data
+,"Jack
+A",22,"a sb",Type
+5,"Jack
+A",,"a sb",Header
