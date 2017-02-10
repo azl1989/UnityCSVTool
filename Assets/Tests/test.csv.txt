@@ -1,9 +1,9 @@
-id,name,age,descript,enum
-System.Int32,System.String,System.Int32,System.String,CSV.Parser+CollectionType
+id,name,age,descript,enum,dynamic
+System.Int32,System.String,System.Int32,System.String,CSV.Parser+CollectionType,DynamicObjectItem
 1,"Joy",20,"a, 
-boy",Data
-2,"Jack",22,"a sb",Data
+boy",Data,"aaa,999"
+2,"Jack",22,"a sb",Data,"bbb,111"
 ,"Jack
-A",22,"a sb",Type
+A",22,"a sb",Type,"ccc,222"
 5,"Jack
-A",,"a sb",Header
+A",,"a sb",Header,"ddd,333"

@@ -6,7 +6,14 @@ namespace CSV
     public class Item
     {
         private object m_Object;
-
+        public object Value
+        {
+            get
+            {
+                return m_Object;
+            }
+        }
+        
         public Item(object obj)
         {
             m_Object = obj;
@@ -14,18 +21,14 @@ namespace CSV
 
         public T To<T>()
         {
-            return (T)(m_Object);
-        }
-
-        public string ToString()
-        {
-            return m_Object.ToString();
+            return (T)m_Object;
         }
     }
 
     public class Collection
     {
         private Item[] m_Items;
+        private Collection m_Header;
         
         public int Length 
         {
@@ -35,9 +38,10 @@ namespace CSV
             }
         }
 
-        public Collection(Item[] items)
+        public Collection(Item[] items, Collection header)
         {
             m_Items = items;
+            m_Header = header;
         }
 
         public Item this[int index]
@@ -57,12 +61,40 @@ namespace CSV
                 return m_Items[index];
             }
         }
+
+        public Item this[string key]
+        {
+            get
+            {
+                if (m_Items == null || m_Header == null)
+                {
+                    throw new NullReferenceException();
+                }
+
+                var index = 0;
+
+                for (var i = 0; i < m_Header.Length; ++i)
+                {
+                    if ((string)(m_Header[i].Value) == key)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index >= m_Items.Length)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+
+                return m_Items[index];
+            }
+        }
     }
 
     public class Content
     {
         private Collection[] m_Collections;
-        private Collection m_Header;
 
         public int Length 
         {
@@ -72,10 +104,9 @@ namespace CSV
             }
         }
 
-        public Content(Collection[] collections, Collection header)
+        public Content(Collection[] collections)
         {
             m_Collections = collections;
-            m_Header = header;
         }
 
         public Collection this[int index]
@@ -85,35 +116,6 @@ namespace CSV
                 if (m_Collections == null)
                 {
                     throw new NullReferenceException();
-                }
-
-                if (index >= m_Collections.Length)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                return m_Collections[index];
-            }
-        }
-
-        public Collection this[string key]
-        {
-            get
-            {
-                if (m_Collections == null || m_Header == null)
-                {
-                    throw new NullReferenceException();
-                }
-
-                var index = 0;
-
-                for (var i = 0; i < m_Header.Length; ++i)
-                {
-                    if (m_Header[i].To<string>() == key)
-                    {
-                        index = i;
-                        break;
-                    }
                 }
 
                 if (index >= m_Collections.Length)
@@ -135,7 +137,7 @@ namespace CSV
             Type,
         }
 
-        private static Collection DoCollection(string text, char separator, int beginPos, int endPos, CollectionType collectionType, Collection typeCollection)
+        private static Collection DoCollection(string text, char separator, int beginPos, int endPos, Collection headerCollection, CollectionType collectionType, Collection typeCollection)
         {
             var itemList = new List<Item>();
             var pos = beginPos;
@@ -233,14 +235,14 @@ namespace CSV
                 }
             }
 
-            return new Collection(itemList.ToArray());
+            return new Collection(itemList.ToArray(), headerCollection);
         }
 
         private static Content DoContent(string text, char separator)
         {
             var collectionList = new List<Collection>();
-            Collection header = null;
-            Collection type = null;
+            Collection headerCollection = null;
+            Collection typeCollection = null;
             var pos = 0;
             var quotationCount = 0;
             var collectionCount = 0;
@@ -257,22 +259,22 @@ namespace CSV
                     endPos += (c == '\n' ? 0 : 1);
                     if (collectionCount == 0)
                     {
-                        header = DoCollection(text, separator, pos, endPos, CollectionType.Header, null);
+                        headerCollection = DoCollection(text, separator, pos, endPos, headerCollection, CollectionType.Header, null);
                     }
                     else if (collectionCount == 1)
                     {
-                        type = DoCollection(text, separator, pos, endPos, CollectionType.Type, null);
+                        typeCollection = DoCollection(text, separator, pos, endPos, headerCollection, CollectionType.Type, null);
                     }
                     else
                     {
-                        collectionList.Add(DoCollection(text, separator, pos, endPos, CollectionType.Data, type));
+                        collectionList.Add(DoCollection(text, separator, pos, endPos, headerCollection, CollectionType.Data, typeCollection));
                     }
                     pos = i + 1;
                     collectionCount++;
                 }
             }
 
-            return new Content(collectionList.ToArray(), header);
+            return new Content(collectionList.ToArray());
         }
 
         public static Content Run(string text, char separator)
