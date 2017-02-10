@@ -168,7 +168,9 @@ namespace CSV
                     switch (collectionType)
                     {
                         case CollectionType.Header:
-                            itemList.Add(new Item(itemText));
+                            {
+                                itemList.Add(new Item(itemText));
+                            }
                             break;
 
                         case CollectionType.Type:
@@ -181,7 +183,6 @@ namespace CSV
                                 }
                                 itemList.Add(new Item(type));
                             }
-                            
                             break;
 
                         case CollectionType.Data:
@@ -227,7 +228,6 @@ namespace CSV
                                     }
                                 }
                             }
-                            
                             break;
                     }
 
